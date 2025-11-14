@@ -139,7 +139,7 @@ export type PositionConfigMap = Record<CardPosition, PositionConfig>;
 /**
  * Get the display letter (A-F) for a card ID.
  * This letter is shown in the footer and never changes.
- * 
+ *
  * @param cardId - The card ID enum value
  * @returns Single letter string (A, B, C, D, E, or F)
  */
@@ -153,5 +153,15 @@ export function getCardLetter(cardId: CardId): string {
     [CardId.CARD_F]: 'F',
   };
   return letterMap[cardId];
+}
+
+/**
+ * Helper to create a CardAnimationMap with all cards set to the same state
+ */
+export function createUniformAnimationState(state: AnimationState): CardAnimationMap {
+  return Object.values(CardId).reduce((acc, cardId) => {
+    acc[cardId] = state;
+    return acc;
+  }, {} as CardAnimationMap);
 }
 

@@ -27,22 +27,22 @@ import {
   CardAnimationMap,
   AnimationState,
   getCardLetter,
-} from './photoCollage/photoCollageTypes';
+} from './photoCollageComponents/photoCollageTypes';
 
 // Logic and data imports
 import {
   getPositionConfig,
-} from './photoCollage/cardPositions';
-import { photoCollageCardVariants } from './photoCollage/photoCollageFramerVariants';
+} from './photoCollageComponents/cardPositions';
+import { photoCollageCardVariants } from './photoCollageComponents/photoCollageFramerVariants';
 import {
   initializeCards,
-} from './photoCollage/cardShuffleLogic';
-import { getPhotoData, photoImages } from './photoCollage/photoData';
+} from './photoCollageComponents/cardShuffleLogic';
+import { getPhotoData, photoImages } from './photoCollageComponents/photoData';
 
 // Component imports
-import { LeftButton } from './photoCollage/LeftButton';
-import { RightButton } from './photoCollage/RightButton';
-import { VintagePostcard } from './photoCollage/VintagePostcard';
+import { LeftButton } from './photoCollageComponents/LeftButton';
+import { RightButton } from './photoCollageComponents/RightButton';
+import { VintagePostcard } from './photoCollageComponents/VintagePostcard';
 
 /**
  * Main Photo Collage Component
@@ -139,20 +139,9 @@ const PhotoCollage: React.FC = () => {
   };
 
   return (
-    <section className="root-container relative h-auto w-full min-w-[380px] overflow-hidden m-0">
-      
-      {/* Main flexbox container for centering content */}
-      <div className="flexbox-container flex flex-col justify-center items-center h-full min-h-[calc(100vh-8rem)]">
-        
-        {/* Quote section */}
-        <div className="px-4 sm:px-6 z-20 max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl">
-          <p className="text-center text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium text-[#3D472C] leading-relaxed">
-            That's why we're giving you free food, merch, and 24 hours in Norman, Oklahoma to make something cool!
-          </p>
-        </div>
-
-        {/* Photo collage with navigation arrows */}
-        <div className="photo-collage-parent-container relative w-full z-10 flex items-center justify-center">
+    <>
+      {/* Photo collage with navigation arrows */}
+      <div className="photo-collage-parent-container relative w-full z-10 flex items-center justify-center">
           
           {/* Left arrow button - triggers backward shuffle */}
           <LeftButton
@@ -170,7 +159,7 @@ const PhotoCollage: React.FC = () => {
 
           {/* Photo collage container */}
           <motion.div 
-            className="photo-collage-container relative w-1/2 flex-shrink-0 h-[16rem] md:h-[32rem] lg:h-[40rem] xl:h-[48rem] overflow-visible"
+            className="photo-collage-container relative w-1/2 flex-shrink-0 h-[16rem] md:h-[24rem] lg:h-[24rem] xl:h-[24rem] overflow-visible"
             onViewportEnter={() => setIsInView(true)}
             onViewportLeave={() => setIsInView(false)}
             viewport={{ amount: 0.8 }}
@@ -199,7 +188,7 @@ const PhotoCollage: React.FC = () => {
               return (
                 <motion.div
                   key={card.id}
-                  className={`${card.id} absolute w-80 md:w-[32rem] lg:w-[40rem] drop-shadow-lg select-none pointer-events-none`}
+                  className={`${card.id} absolute w-[10rem] md:w-[20rem] lg:w-[28rem] drop-shadow-lg select-none pointer-events-none`}
                   style={{
                     zIndex: card.zIndex, // Use card's zIndex, not position's default
                     willChange: 'transform, opacity', // GPU acceleration hint
@@ -243,6 +232,7 @@ const PhotoCollage: React.FC = () => {
                     imageUrl={photoData.path}
                     title={photoData.title}
                     footer={`CARD ${cardLetter}`}
+                    demoNumber={photoData.demoNumber}
                   />
                 </motion.div>
               );
@@ -262,9 +252,8 @@ const PhotoCollage: React.FC = () => {
             isAnimatingRef={isAnimatingRef}
             swapPhotoOnCardID={swapPhotoOnCardID}
           />
-        </div>
       </div>
-    </section>
+    </>
   );
 };
 

@@ -1,0 +1,451 @@
+---
+sidebar_position: 1
+title: PhotoCollage Component
+description: Interactive photo collage with shuffleable vintage postcards
+---
+
+import BrowserWindow from '@site/src/components/BrowserWindow';
+import PhotoCollage from '@site/src/components/photoCollage/PhotoCollage';
+
+# PhotoCollage Component
+
+An interactive, animated photo collage component that displays vintage-styled postcards in a dynamic layout. Users can navigate through photos using left/right arrow buttons with smooth, physics-based animations.
+
+## Features
+
+- 🎴 **6-Card Collage Layout** - Displays multiple cards in an aesthetically pleasing arrangement
+- ✨ **Smooth Animations** - Physics-based spring animations for natural motion
+- 🎯 **Interactive Navigation** - Left/right arrows to shuffle through photos
+- 📱 **Responsive Design** - Adapts to different screen sizes
+- 🎨 **Vintage Aesthetic** - Postcard styling with custom fonts and colors
+- 🔄 **Infinite Scrolling** - Photos cycle continuously in both directions
+- ⚡ **Performance Optimized** - GPU-accelerated animations with proper throttling
+
+<BrowserWindow>
+  <PhotoCollage />
+</BrowserWindow>
+
+## Installation
+
+The PhotoCollage component is already included in this starter kit. The component is located at:
+
+```
+src/components/photoCollage/
+├── PhotoCollage.tsx              # Main component
+├── photoCollageComponents/
+│   ├── VintagePostcard.tsx       # Postcard UI component
+│   ├── NavigationButton.tsx      # Shared left/right button
+│   ├── LeftButton.tsx            # Left navigation wrapper
+│   ├── RightButton.tsx           # Right navigation wrapper
+│   ├── cardConstants.ts          # Animation constants
+│   ├── cardPositions.ts          # Position configurations
+│   ├── cardShuffleLogic.ts       # Business logic for shuffling
+│   ├── photoCollageFramerVariants.ts  # Animation variants
+│   ├── photoCollageTypes.ts      # TypeScript definitions
+│   └── photoData.ts              # Photo data management
+```
+
+## Basic Usage
+
+### With Images
+
+```jsx
+import PhotoCollage from '@site/src/components/photoCollage/PhotoCollage';
+
+function MyPage() {
+  return <PhotoCollage />;
+}
+```
+
+## Props
+
+### VintagePostcard Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `imageUrl` | `string` | - | URL/path to the image (optional in demo mode) |
+| `title` | `string` | - | Title text displayed above the image |
+| `footer` | `string` | - | Footer text displayed below the image |
+| `className` | `string` | `''` | Optional additional CSS classes |
+| `demoNumber` | `number` | - | Demo mode: display a number instead of an image |
+
+## Architecture Overview
+
+### Component Hierarchy
+
+```
+PhotoCollage
+├── LeftButton (NavigationButton)
+├── motion.div (Collage Container)
+│   └── [6x] motion.div (Card)
+│       └── VintagePostcard
+└── RightButton (NavigationButton)
+```
+
+### State Management
+
+The component uses React hooks for state management:
+
+- **`cards`** - Array of 6 Card objects tracking position and photo data
+- **`animationStates`** - Map of card IDs to animation states
+- **`isInView`** - Triggers entrance animations when scrolling into view
+- **`hasCompletedEntrance`** - Tracks whether initial animation finished
+- **`buttonsDisabled`** - Prevents rapid clicking during animations
+- **`isAnimatingRef`** - Synchronous check to prevent race conditions
+
+### Card Positions
+
+Cards can occupy 6 positions in the collage:
+
+| Position | Z-Index | Description |
+|----------|---------|-------------|
+| `CENTER` | 5 | Front-most card, center of collage |
+| `CENTER_BACK` | 0 | Hidden behind center card |
+| `TOP_LEFT` | 4 | Upper left, behind center |
+| `TOP_RIGHT` | 3 | Upper right, middle layer |
+| `BOTTOM_LEFT` | 2 | Lower left, near back |
+| `BOTTOM_RIGHT` | 1 | Lower right, back-most visible |
+
+### Animation Flow
+
+1. **Initial Load**: Cards fly in from off-screen with staggered delays
+2. **Forward Shuffle** (Right Arrow):
+   - Center card flies off to center-back position
+   - Next card in sequence smoothly moves to center
+   - Center-back card moves to vacated position
+   - All z-indexes rotate
+3. **Backward Shuffle** (Left Arrow):
+   - Similar to forward but in reverse order
+   - Previous card becomes new center
+
+### Shuffle Logic
+
+The shuffle system uses a 3-card rotation:
+
+```
+Forward:  CENTER → CENTER_BACK → [vacated position]
+Backward: CENTER_BACK → CENTER → [vacated position]
+```
+
+Z-indexes update mid-animation (when card is off-screen) to prevent visual glitches.
+
+## Customization
+
+### Adding Your Own Photos
+
+Edit `src/components/photoCollage/photoCollageComponents/photoData.ts`:
+
+```typescript
+import MyPhoto1 from './path/to/photo1.png';
+import MyPhoto2 from './path/to/photo2.png';
+
+export const photoImages: PhotoData[] = [
+  {
+    path: MyPhoto1,
+    title: 'My First Photo',
+    footer: 'PHOTO-001',
+  },
+  {
+    path: MyPhoto2,
+    title: 'My Second Photo',
+    footer: 'PHOTO-002',
+  },
+  // Add more photos...
+];
+```
+
+### Customizing Animation Timing
+
+Edit `src/components/photoCollage/photoCollageComponents/cardConstants.ts`:
+
+```typescript
+export const SCALE_VALUE = 0.7;           // Card scale (0-1)
+export const OFF_SCREEN_DISTANCE = '35vw'; // Initial entrance distance
+export const FLY_DISTANCE = '50vw';        // Shuffle fly distance
+export const SHUFFLE_DELAY = 300;          // Delay between shuffle phases (ms)
+```
+
+### Customizing Card Positions
+
+Edit `src/components/photoCollage/photoCollageComponents/cardPositions.ts`:
+
+```typescript
+export const POSITION_CONFIGS: PositionConfigMap = {
+  [CardPosition.CENTER]: {
+    top: '50%',      // Vertical position
+    left: '50%',     // Horizontal position
+    rotate: 0,       // Rotation in degrees
+    zIndex: 5,       // Stacking order
+    flyDirection: 'right',
+  },
+  // Modify other positions...
+};
+```
+
+### Styling the Postcard
+
+The `VintagePostcard` component uses Tailwind CSS. To customize:
+
+```jsx
+<VintagePostcard
+  imageUrl="/path/to/image.jpg"
+  title="Custom Title"
+  footer="CUSTOM-001"
+  className="custom-shadow custom-border"
+/>
+```
+
+Or modify `VintagePostcard.tsx` directly for global changes.
+
+## Advanced Examples
+
+### Custom Quote with Collage
+
+```jsx
+<section className="flex flex-col items-center gap-8 p-8">
+  <div className="max-w-2xl">
+    <p className="text-center text-2xl font-medium text-gray-700 leading-relaxed">
+      "Every picture tells a story. These are ours."
+    </p>
+  </div>
+  <PhotoCollage demoMode={true} />
+</section>
+```
+
+### With Custom Background
+
+```jsx
+<div className="bg-gradient-to-br from-amber-50 to-orange-100 p-12 rounded-lg">
+  <PhotoCollage demoMode={true} />
+</div>
+```
+
+## Performance Considerations
+
+### Optimization Techniques Used
+
+1. **GPU Acceleration**: All animations use `transform` and `opacity` (GPU-accelerated properties)
+2. **willChange Hints**: Cards hint `willChange: 'transform'` for browser optimization
+3. **Click Throttling**: `isAnimatingRef` prevents rapid clicks during animations
+4. **Memoization Ready**: Component structure supports React.memo if needed
+5. **Lazy Rendering**: Uses viewport intersection for entrance animations
+
+### Best Practices
+
+- **Image Optimization**: Use optimized images (WebP, compressed PNGs)
+- **Limit Photos**: Keep photo array reasonable (&lt;50 images) for memory efficiency
+- **Debounce Navigation**: Built-in throttling prevents animation conflicts
+- **Responsive Images**: Use responsive image formats for different screen sizes
+
+## Troubleshooting
+
+### Cards Not Animating
+
+**Problem**: Cards appear static, no entrance animation
+
+**Solution**: Check that the component is visible in viewport (requires 80% visibility)
+
+```jsx
+// Ensure parent container allows overflow
+<div style={{ overflow: 'visible' }}>
+  <PhotoCollage />
+</div>
+```
+
+### Buttons Not Appearing
+
+**Problem**: Navigation arrows don't show
+
+**Solution**: Buttons are hidden on screens smaller than 600px (Tailwind's `custom600` breakpoint)
+
+```css
+/* In your Tailwind config, ensure custom600 is defined: */
+screens: {
+  custom600: '600px',
+}
+```
+
+### Images Not Loading
+
+**Problem**: Blank cards or broken images
+
+**Solution**: Check image imports in `photoData.ts`
+
+```typescript
+// Correct import path
+import Photo1 from '../../../../common/assets/photoCollageImages/IMG_1.png';
+
+// Not relative to component
+import Photo1 from './IMG_1.png'; // ❌ Wrong
+```
+
+### Z-Index Visual Glitches
+
+**Problem**: Cards appear to jump or flicker during shuffle
+
+**Solution**: The component uses two-phase z-index updates. Ensure `SHUFFLE_DELAY` in `cardConstants.ts` matches animation duration.
+
+## Accessibility
+
+### Keyboard Navigation
+
+Currently, the component supports mouse/touch only. To add keyboard support:
+
+```jsx
+// Add to button components
+onKeyDown={(e) => {
+  if (e.key === 'ArrowLeft') handleShuffleBackward(e);
+  if (e.key === 'ArrowRight') handleShuffleForward(e);
+}}
+```
+
+### Screen Readers
+
+Navigation buttons include `aria-label`:
+
+- Left button: "Previous photo"
+- Right button: "Next photo"
+
+Images should include meaningful `alt` text in `photoData.ts`.
+
+## API Reference
+
+### Core Functions
+
+#### `initializeCards()`
+```typescript
+function initializeCards(): Card[]
+```
+Creates the initial 6-card setup with positions and photo assignments.
+
+#### `executeForwardShuffle(cards)`
+```typescript
+function executeForwardShuffle(currentCards: Card[]): ShuffleResult
+```
+Executes a forward shuffle (right arrow). Returns updated cards and animation states.
+
+#### `executeBackwardShuffle(cards)`
+```typescript
+function executeBackwardShuffle(currentCards: Card[]): ShuffleResult
+```
+Executes a backward shuffle (left arrow). Returns updated cards and animation states.
+
+#### `getPhotoData(index, demoMode?)`
+```typescript
+function getPhotoData(index: number, demoMode?: boolean): PhotoData
+```
+Retrieves photo data for a given index. In demo mode, returns numbered placeholder.
+
+#### `createUniformAnimationState(state)`
+```typescript
+function createUniformAnimationState(state: AnimationState): CardAnimationMap
+```
+Helper to set all 6 cards to the same animation state.
+
+### Type Definitions
+
+#### `Card`
+```typescript
+interface Card {
+  id: CardId;                  // Unique card identifier (A-F)
+  position: CardPosition;      // Current position in collage
+  zIndex: number;              // Stacking order (0-5)
+  photoIndex: number;          // Original photo assignment
+  currentPhotoIndex: number;   // Currently displayed photo
+}
+```
+
+#### `CardPosition`
+```typescript
+enum CardPosition {
+  CENTER = 'center',
+  CENTER_BACK = 'centerBack',
+  TOP_LEFT = 'topLeft',
+  TOP_RIGHT = 'topRight',
+  BOTTOM_LEFT = 'bottomLeft',
+  BOTTOM_RIGHT = 'bottomRight'
+}
+```
+
+#### `AnimationState`
+```typescript
+enum AnimationState {
+  IDLE = 'idle',
+  FLY_LEFT = 'flyLeft',
+  FLY_RIGHT = 'flyRight',
+  MOVE_TO_POSITION = 'moveToPosition',
+  OFFSCREEN = 'offscreen',
+  ONSCREEN = 'onscreen',
+}
+```
+
+#### `ShuffleResult`
+```typescript
+interface ShuffleResult {
+  cardsWithOldZIndex: Card[];      // Cards with positions updated, old z-indexes
+  cardsWithNewZIndex: Card[];      // Cards with positions and new z-indexes
+  animationStates: CardAnimationMap; // Animation states for each card
+  flyingCardId: CardId;            // Which card is flying off-screen
+  movingToCenterCardId: CardId;    // Which card is moving to center
+}
+```
+
+## Design Decisions
+
+### Why 6 Cards?
+
+The 6-card layout provides:
+- Visual balance (center + 5 surrounding cards)
+- Hidden buffer card (CENTER_BACK) for smooth transitions
+- Aesthetic appeal with layered depth
+
+### Why Two-Phase Z-Index Updates?
+
+Z-indexes update mid-animation to prevent visual artifacts:
+1. **Phase 1 (t=0ms)**: Cards start moving with old z-indexes
+2. **Phase 2 (t=150ms)**: Z-indexes update when flying card is off-screen
+3. **Phase 3 (t=300ms)**: Animation completes
+
+This ensures the flying card doesn't visually "jump" behind other cards.
+
+### Why Framer Motion?
+
+Framer Motion provides:
+- Declarative animation API
+- Physics-based springs for natural motion
+- Viewport intersection detection
+- Gesture support (hover, tap)
+- Optimized performance
+
+## Contributing
+
+To modify or extend the PhotoCollage component:
+
+1. **Add New Positions**: Update `CardPosition` enum and `POSITION_CONFIGS`
+2. **Change Shuffle Logic**: Modify `cardShuffleLogic.ts`
+3. **Adjust Animations**: Edit `photoCollageFramerVariants.ts`
+4. **Add Features**: Follow the existing architecture pattern
+
+## Browser Support
+
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ⚠️ IE11 not supported (uses modern CSS features)
+
+## Changelog
+
+### v2.0.0 (Current - Refactored)
+- ✨ Refactored for better maintainability
+- 🔧 Reduced code verbosity by ~30%
+- ♻️ Unified button components
+- 📦 Added demo mode support
+- 🎯 Improved type safety
+- 📚 Comprehensive documentation
+
+### v1.0.0
+- 🎉 Initial release
+- Basic photo collage functionality
+- Left/right navigation
+- Vintage postcard styling

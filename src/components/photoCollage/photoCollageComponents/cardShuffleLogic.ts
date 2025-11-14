@@ -239,25 +239,19 @@ export function executeBackwardShuffle(currentCards: Card[]): ShuffleResult {
 
 /**
  * Helper: Find a card at a specific position, throw if not found.
- * This ensures we always have the required cards for a shuffle.
  */
 function findCardAtPosition(cards: Card[], position: CardPosition): Card {
   const card = cards.find(c => c.position === position);
-  if (!card) {
-    throw new Error(`No card found at ${position} position`);
-  }
+  if (!card) throw new Error(`No card found at ${position} position`);
   return card;
 }
 
 /**
  * Helper: Find a card by its ID, throw if not found.
- * This ensures we always have the required cards for a shuffle.
  */
 function findCardById(cards: Card[], cardId: CardId): Card {
   const card = cards.find(c => c.id === cardId);
-  if (!card) {
-    throw new Error(`Card ${cardId} not found`);
-  }
+  if (!card) throw new Error(`Card ${cardId} not found`);
   return card;
 }
 
@@ -275,29 +269,15 @@ function getNextCardIdInSequence(currentCardId: CardId, direction: 'forward' | '
 
 /**
  * Helper: Update z-indexes for shuffle operations.
- *
- * Forward: Shift all cards up (+1), then set special cases
- * Backward: Shift all cards down (-1), then set special cases
  */
 function updateZIndexes(cards: Card[], centerCard: Card, nextCenterCard: Card, direction: 'forward' | 'backward'): void {
+  const shift = direction === 'forward' ? 1 : -1;
+  cards.forEach(card => card.zIndex += shift);
+
   if (direction === 'forward') {
-    
-    cards.forEach(card => {
-      card.zIndex = card.zIndex + 1;
-    });
-    centerCard.zIndex = 0;      // Card leaving CENTER goes to back
-    nextCenterCard.zIndex = 5;  // Card entering CENTER goes to front
-
-  } else if (direction === 'backward') {
-
-    cards.forEach(card => {
-      card.zIndex = card.zIndex - 1;
-    });
-    nextCenterCard.zIndex = 5;
-
-  } else {
-    throw new Error(`Invalid direction: ${direction}`);
+    centerCard.zIndex = 0;
   }
+  nextCenterCard.zIndex = 5;
 }
 
 /**
@@ -309,25 +289,10 @@ function buildAnimationStates(
   flyDirection: 'left' | 'right',
   movingCardIds: CardId[]
 ): CardAnimationMap {
-  // Initialize all cards to MOVE_TO_POSITION (maintains their current position)
-  const animationStates: CardAnimationMap = {
-    [CardId.CARD_A]: AnimationState.MOVE_TO_POSITION,
-    [CardId.CARD_B]: AnimationState.MOVE_TO_POSITION,
-    [CardId.CARD_C]: AnimationState.MOVE_TO_POSITION,
-    [CardId.CARD_D]: AnimationState.MOVE_TO_POSITION,
-    [CardId.CARD_E]: AnimationState.MOVE_TO_POSITION,
-    [CardId.CARD_F]: AnimationState.MOVE_TO_POSITION,
-  };
-  
-  // Flying card gets directional fly animation
-  animationStates[flyingCardId] = flyDirection === 'left'
-    ? AnimationState.FLY_LEFT
-    : AnimationState.FLY_RIGHT;
-  
-  // Moving cards get smooth position transitions
-  movingCardIds.forEach(cardId => {
-    animationStates[cardId] = AnimationState.MOVE_TO_POSITION;
-  });
-  
-  return animationStates;
+  const flyState = flyDirection === 'left' ? AnimationState.FLY_LEFT : AnimationState.FLY_RIGHT;
+
+  return Object.values(CardId).reduce((acc, cardId) => {
+    acc[cardId] = cardId === flyingCardId ? flyState : AnimationState.MOVE_TO_POSITION;
+    return acc;
+  }, {} as CardAnimationMap);
 }
