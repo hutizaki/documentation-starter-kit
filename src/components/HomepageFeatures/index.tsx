@@ -7,13 +7,15 @@ type FeatureItem = {
   title: string;
   Svg?: React.ComponentType<React.ComponentProps<'svg'>>;
   pngFile?: string;
+  pngClassName?: string;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
   {
     title: 'Frontend',
-    pngFile: require('@site/static/img/2026_assets/ComponentBee.png').default,
+    pngFile: require('@site/static/img/frontendSchooner.png').default,
+    pngClassName: styles.featurePngLarge,
     description: (
       <>
         Learn how the frontend uses React to build the user interface.
@@ -22,7 +24,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Backend',
-    pngFile: require('@site/static/img/2026_assets/DatabaseBee.png').default,
+    pngFile: require('@site/static/img/backendBoomer.png').default,
     description: (
       <>
         Learn how the registration system uses MongoDB to store user data.
@@ -41,12 +43,12 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-function Feature({title, Svg, pngFile, description}: FeatureItem) {
+function Feature({title, Svg, pngFile, pngClassName, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
         {Svg && <Svg className={styles.featureSvg} role="img" />}
-        {pngFile && <img src={pngFile} className={styles.featureSvg} alt={title} />}
+        {pngFile && <img src={pngFile} className={pngClassName || styles.featureSvg} alt={title} />}
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>
